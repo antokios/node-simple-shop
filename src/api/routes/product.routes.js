@@ -17,5 +17,4 @@ module.exports = function (app) {
         .route("/products/:id")
         .put(productList.updateProduct)
         .delete(productList.deleteProduct);
-
 };

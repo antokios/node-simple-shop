@@ -11,5 +11,4 @@ module.exports = function (app) {
         .route("/orders")
         .get(orderList.listAllOrders)
         .post(orderList.createNewOrder);
-
 };

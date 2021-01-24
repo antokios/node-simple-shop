@@ -7,21 +7,26 @@ const Order = require("../models/order.model");
 
 // listAllOrders function - To list all orders
 exports.listAllOrders = (req, res) => {
-    Order.find({}, (err, order) => {
+    Order.find({}, (err, orders) => {
         if (err) {
-            res.status(500).send(err);
+            return res.status(500).send(`Internal server error: ${error}`);
         }
-        res.status(200).json(order);
+
+        if (orders && orders.length === 0) {
+            return res.status(404).send(`No orders found!`);
+        }
+
+        return res.status(200).json(orders);
     });
 };
 
 // createNewOrder function - To create new order
 exports.createNewOrder = (req, res) => {
-    let newOrder = new Order(req.body);
+    const newOrder = new Order(req.body);
     newOrder.save((err, order) => {
         if (err) {
-            res.status(500).send(err);
+            return res.status(500).send(err);
         }
-        res.status(201).json(order);
+        return res.status(201).json(order);
     });
 };

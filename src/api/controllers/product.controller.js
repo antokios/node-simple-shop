@@ -1,5 +1,7 @@
 'use strict'
 
+// require validator for string validation
+const validator = require('validator');
 // import Product Model
 const Product = require("../models/product.model");
 
@@ -7,42 +9,103 @@ const Product = require("../models/product.model");
 
 // listAllProducts function - To list all products
 exports.listAllProducts = (req, res) => {
-    Product.find({}, (err, product) => {
+    Product.find({}, (err, products) => {
         if (err) {
-            res.status(500).send(err);
+            return res.status(500).send(`Internal server error: ${error}`);
         }
-        res.status(200).json(product);
+
+        if (products && products.length === 0) {
+            return res.status(404).send(`No products found!`);
+        }
+
+        return res.status(200).json(products);
     });
 };
 
 // createNewProduct function - To create new product
 exports.createNewProduct = (req, res) => {
-    let newProduct = new Product(req.body);
+    const name = req.body?.name?.trim();
+    const price = req.body?.price;
+    const description = req.body?.description?.trim();
+    const imageUrl = req.body?.imageUrl?.trim();
+
+    if (!name || !price || !description || !imageUrl) {
+        return res.status(400).send(`Incomplete product information`);
+    }
+
+    if (!typeof price === 'number' || price <= 0) {
+        return res.status(400).send(`Invalid price`);
+    }
+
+    if (!validator.isURL(imageUrl)) {
+        return res.status(400).send(`Invalid URL`);
+    }
+
+    const newProduct = new Product({ name, price, description, imageUrl });
+
     newProduct.save((err, product) => {
         if (err) {
-            res.status(500).send(err);
+            return res.status(500).send(`Internal server error: ${err}`);
         }
-        res.status(201).json(product);
+        return res.status(201).json(product);
     });
 };
 
 
 // updateProduct function - To update product info by id
 exports.updateProduct = (req, res) => {
+    const name = req.body?.name?.trim();
+    const price = req.body?.price;
+    const description = req.body?.description?.trim();
+    const imageUrl = req.body?.imageUrl?.trim();
+    const mongoId = req?.params?.id;
+
+    if (!validator.isMongoId(mongoId)) {
+        return res.status(400).send('Invalid Id');
+    }
+
+    if (!name || !price || !description || !imageUrl) {
+        return res.status(400).send(`Incomplete product information`);
+    }
+
+    if (!typeof price === 'number' || price <= 0) {
+        return res.status(400).send(`Invalid price`);
+    }
+
+    if (!validator.isURL(imageUrl)) {
+        return res.status(400).send(`Invalid URL`);
+    }
+
     Product.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, (err, product) => {
         if (err) {
-            res.status(500).send(err);
+            return res.status(500).send(`Internal server error: ${err}`);
         }
-        res.status(200).json(product);
+
+        if (!product) {
+            return res.status(404).send(`No product found to edit`);
+        }
+
+        return res.status(200).json(product);
     });
 };
 
 // deleteProduct function - To delete product by id
-exports.deleteProduct = async (req, res) => {
-    await Product.deleteOne({ _id: req.params.id }, (err) => {
+exports.deleteProduct = (req, res) => {
+    const mongoId = req?.params?.id;
+
+    if (!validator.isMongoId(mongoId)) {
+        return res.status(400).send('Invalid Id');
+    }
+
+    Product.deleteOne({ _id: req.params.id }, (err, product) => {
         if (err) {
-            return res.status(404).send(err);
+            return res.status(404).send(`Internal server error: ${err}`);
         }
-        res.status(200).json({ message: "Product successfully deleted" });
+
+        if (product?.deletedCount === 0) {
+            return res.status(404).send('No product found to delete');
+        }
+
+        return res.status(200).send('Product deleted successfully');
     });
 };
