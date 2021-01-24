@@ -8,15 +8,19 @@ const Schema = mongoose.Schema;
 
 // Create Schema Instance and add schema propertise
 const OrderSchema = new Schema({
-    productId: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: "Products"
-    },
-    quantity: {
-        type: Number,
-        default: 1
-    },
+    products: [
+        {
+            productId: {
+                type: Schema.Types.ObjectId,
+                required: true,
+                ref: "Products"
+            },
+            quantity: {
+                type: Number,
+                default: 1
+            }
+        }
+      ],
     customerId: {
         type: Schema.Types.ObjectId,
         required: true,
