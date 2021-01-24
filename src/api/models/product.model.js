@@ -23,6 +23,10 @@ const ProductSchema = new Schema({
     imageUrl: {
         type: String,
         required: true
+    },
+    stockQty: {
+        type: Number,
+        required: true
     }
 });
 

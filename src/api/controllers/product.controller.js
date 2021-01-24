@@ -28,8 +28,9 @@ exports.createNewProduct = (req, res) => {
     const price = req.body?.price;
     const description = req.body?.description?.trim();
     const imageUrl = req.body?.imageUrl?.trim();
+    const stockQty = req.body?.stockQty;
 
-    if (!name || !price || !description || !imageUrl) {
+    if (!name || !price || !description || !imageUrl || !stockQty) {
         return res.status(400).send(`Incomplete product information`);
     }
 
@@ -41,7 +42,11 @@ exports.createNewProduct = (req, res) => {
         return res.status(400).send(`Invalid URL`);
     }
 
-    const newProduct = new Product({ name, price, description, imageUrl });
+    if (!typeof stockQty === 'number' || stockQty <= 0) {
+        return res.status(400).send(`Invalid stock quantity`);
+    }
+
+    const newProduct = new Product({ name, price, description, imageUrl, stockQty });
 
     newProduct.save((err, product) => {
         if (err) {
@@ -58,13 +63,14 @@ exports.updateProduct = (req, res) => {
     const price = req.body?.price;
     const description = req.body?.description?.trim();
     const imageUrl = req.body?.imageUrl?.trim();
+    const stockQty = req.body?.stockQty;
     const mongoId = req?.params?.id;
 
     if (!validator.isMongoId(mongoId)) {
         return res.status(400).send('Invalid Id');
     }
 
-    if (!name || !price || !description || !imageUrl) {
+    if (!name || !price || !description || !imageUrl || !stockQty) {
         return res.status(400).send(`Incomplete product information`);
     }
 
@@ -74,6 +80,10 @@ exports.updateProduct = (req, res) => {
 
     if (!validator.isURL(imageUrl)) {
         return res.status(400).send(`Invalid URL`);
+    }
+
+    if (!typeof stockQty === 'number' || stockQty <= 0) {
+        return res.status(400).send(`Invalid stock quantity`);
     }
 
     Product.findOneAndUpdate({ _id: req.params.id }, req.body, { new: true }, (err, product) => {
