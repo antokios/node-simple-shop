@@ -8,7 +8,8 @@ const uri = "mongodb+srv://Admin:demopass@reportingdata.lvtrt.mongodb.net/shopdb
 // Declare a variable named option and assign optional settings
 const options = {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useFindAndModify: false
 };
 
 // Connect MongoDB Atlas using mongoose connect method
