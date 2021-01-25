@@ -11,7 +11,7 @@ const compression = require('compression')
 const app = express();
 
 // define port to run express app
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 // use bodyParser middleware on express app
 app.use(bodyParser.urlencoded({ extended: true }));
