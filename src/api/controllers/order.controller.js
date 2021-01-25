@@ -1,7 +1,11 @@
 'use strict'
 
-// import Order Model
+// require validator for string validation
+const validator = require('validator');
+// import Order, Customer, Product Models
 const Order = require("../models/order.model");
+const Customer = require("../models/customer.model");
+const Product = require("../models/product.model");
 
 // DEFINE CONTROLLER FUNCTIONS
 
@@ -22,11 +26,64 @@ exports.listAllOrders = (req, res) => {
 
 // createNewOrder function - To create new order
 exports.createNewOrder = (req, res) => {
-    const newOrder = new Order(req.body);
-    newOrder.save((err, order) => {
+    const customerId = req.body?.customerId;
+    const productsArray = req.body?.products;
+
+    let productsToUpdateInDbArray = [];
+
+    if (!validator.isMongoId(customerId)) {
+        return res.status(400).send('Invalid customer Id');
+    }
+
+    Customer.findById(customerId, async (err, customer) => {
         if (err) {
-            return res.status(500).send(err);
+            return res.status(500).send(`Internal server error: ${error}`);
         }
-        return res.status(201).json(order);
+
+        if (!customer) {
+            return res.status(404).send(`No customers found!`);
+        }
+
+        if (!productsArray || productsArray.length === 0) {
+            return res.status(400).send(`No products found in the order!`);
+        }
+
+        for (let product of productsArray) {
+            if (!validator.isMongoId(product?.productId)) {
+                return res.status(400).send('Invalid product Id');
+            }
+
+            if (!product?.quantity || product?.quantity < 1) {
+                return res.status(400).send('Invalid product quantity');
+            }
+
+            let productFound = await Product.findById(product?.productId).exec();
+            
+            if (!productFound) {
+                return res.status(404).send('Product not found!');
+            }
+
+            if (productFound.stockQty < product.quantity) {
+                return res.status(400).send('Not enough product quantity in stock')
+            }
+
+            productFound.stockQty -= product.quantity;
+            productsToUpdateInDbArray.push(productFound);
+        }
+
+        const newOrder = new Order(req.body);
+        newOrder.save(async (err, order) => {
+            if (err) {
+                return res.status(500).send(`Internal server error: ${error}`);
+            }
+
+            for (let item of productsToUpdateInDbArray) {
+                const filter = { _id: item._id };
+                const update = { stockQty: item.stockQty };
+
+                await Product.findOneAndUpdate( filter, update, { new: true } );
+            }
+            return res.status(201).json(order);
+        });
     });
 };
