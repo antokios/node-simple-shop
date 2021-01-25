@@ -16,7 +16,7 @@ cd node-simple-shop && npm install
 To run the development server:
 
 ```
-# The development server runs on port 3000
+# The development server runs on port 4000
 npm run dev
 ```
 
