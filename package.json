@@ -4,6 +4,9 @@
   "description": "Simple shop backend API for Softweb Interview",
   "private": false,
   "main": "server.js",
+  "engines": {
+    "node": "14.x"
+  },
   "scripts": {
     "dev": "nodemon src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
