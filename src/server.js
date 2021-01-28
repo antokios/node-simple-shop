@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression')
+var path = require('path');
 
 // create express app
 const app = express();
@@ -28,7 +29,7 @@ app.use(compression());
 
 // Add endpoint
 app.get('/', (req, res) => {
-    res.send("Welcome to Tony's Shop default endpoint");
+    res.sendFile(path.join(__dirname + '/api/routes/home.route.html'));
 });
 
 // Import DB Connection
